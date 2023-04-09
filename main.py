@@ -1,5 +1,7 @@
 import tkinter as tk
 import random
+import copy
+
 from time import sleep
 
 
@@ -11,9 +13,9 @@ class Human:
         self.l = l
         self.infected = False
 
-
 def create_gui():
     def create_grid(p, s1, s2, s3, s4, l):
+        generation = l
         root = tk.Tk()
         root.geometry("1000x1000")
         root.title("Simulation")
@@ -23,22 +25,24 @@ def create_gui():
 
         grid0 = [[None for j in range(100)] for i in range(100)]
         grid1 = [[None for j in range(100)] for i in range(100)]
-        flag = 1
+        global flag
+        flag = True
         for i in range(100):
             for j in range(100):
                 if random.random() < p:
                     rand = random.random()
                     s = 0
                     if rand < s1:
-                        s = s1
+                        s = 1
                     elif rand < s1 + s2:
-                        s = s2
+                        s = 2
                     elif rand < s1 + s2 + s3:
-                        s = s3
+                        s = 3
                     else:
-                        s = s4
+                        s = 4
 
-                    human = Human(p, s, l)
+                    human = Human(p, s, 0)
+                    human.infected = False
                     grid1[i][j] = human
                     canvas.create_rectangle(i * cell_size + 50, j * cell_size + 50, (i + 1) * cell_size + 50, (j + 1) * cell_size + 50, fill='blue')
                 else:
@@ -55,32 +59,83 @@ def create_gui():
         canvas.create_rectangle(i * cell_size + 50, j * cell_size + 50, (i + 1) * cell_size + 50, (j + 1) * cell_size + 50, fill='red')
 
         def update_grid():
-            prev_grid = None
-            new_grid = None
-
-            # we need to update grid 0
-
+            prev_grid = grid0
+            new_grid = grid1
+            global flag
             if flag:
                 new_grid = grid0
                 prev_grid = grid1
 
-            #update grid1
-            else:
-                new_grid = grid1
-                prev_grid = grid0
 
-
-            for i in range(100):
-                for j in range(100):
+            for i in range(1, 99):
+                for j in range(1, 99):
                     human = prev_grid[i][j]
+                    new_grid[i][j] = copy.copy(human)
+
                     if human:
-                        if not human.infected:
-                            pass
+                        tmp_s = human.s
+                        # human is blue and l is 0
+                        if not human.infected and human.l == 0:
+                            count = 0
+
+                            if prev_grid[i - 1][j - 1] and prev_grid[i - 1][j - 1].infected:
+                                count += 1
+                            if prev_grid[i - 1][j] and prev_grid[i - 1][j].infected:
+                                count += 1
+                            if prev_grid[i - 1][j + 1] and prev_grid[i - 1][j + 1].infected:
+                                count += 1
+                            if prev_grid[i][j - 1] and prev_grid[i][j - 1].infected:
+                                count += 1
+                            if prev_grid[i][j + 1] and prev_grid[i][j + 1].infected:
+                                count += 1
+                            if prev_grid[i + 1][j - 1] and prev_grid[i + 1][j - 1].infected:
+                                count += 1
+                            if prev_grid[i + 1][j] and prev_grid[i + 1][j].infected:
+                                count += 1
+                            if prev_grid[i + 1][j + 1] and prev_grid[i + 1][j + 1].infected:
+                                count += 1
+
+                            if count >= 2:
+                               if tmp_s != 1:
+                                   tmp_s -= 1
+
+                            r = random.random()
+
+                            if human.s == 1:
+                                new_grid[i][j].infected = True
+                            elif human.s == 2 and r < 2/3:
+                                new_grid[i][j].infected = True
+                            elif human.s == 3 and r < 1/3:
+                                new_grid[i][j].infected = True
+                            elif human.s == 4:
+                                new_grid[i][j].infected = False
+
+                            if new_grid[i][j].infected:
+                                canvas.create_rectangle(i * cell_size + 50, j * cell_size + 50,
+                                                        (i + 1) * cell_size + 50, (j + 1) * cell_size + 50, fill='red')
+                        # human is red
+                        if human.infected:
+                            # turning human red to blue
+                            new_grid[i][j].infected = False
+                            new_grid[i][j].l = generation
+
+                            canvas.create_rectangle(i * cell_size + 50, j * cell_size + 50,
+                                                    (i + 1) * cell_size + 50, (j + 1) * cell_size + 50, fill='blue')
+
+                        # human is blue and l > 0
+                        else:
+                            new_grid[i][j].l -= 1
+
+                    # the grid in the i j location is None
+                    else:
+                        new_grid[i][j] = None
+
+            flag = not flag
+            # need to do deep copy from the new bords to the grid 0 and 1
 
 
 
-            #canvas.create_rectangle(i * cell_size + 50, j * cell_size + 50, (i + 1) * cell_size + 50,(j + 1) * cell_size + 50, fill='red')
-            root.after(100, update_grid) # update the canvas
+            root.after(1, update_grid) # update the canvas
             #canvas.update()
 
         root.after(1, update_grid)
@@ -95,12 +150,12 @@ def create_gui():
        # s4 = float(s4_entry.get())
         #        l = float(l_entry.get())
 
-        p = 0.1
-        s1 = 0.1
-        s2 = 0.1
-        s3 = 0.1
-        s4 = 0.1
-        l = 5
+        p = 0.4
+        s1 = 0.25
+        s2 = 0.25
+        s3 = 0.25
+        s4 = 0.25
+        l = 3
 
 
         root.destroy()
