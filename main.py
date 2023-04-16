@@ -18,15 +18,19 @@ def create_gui():
         generation = l
         root = tk.Tk()
         root.geometry("1000x1000")
-        root.title("Simulation")
+        root.title("Spreading Rumours")
         s1_label = tk.Label(root, text="Human percent that exposed: 0")
         s1_label.pack()
         s2_label = tk.Label(root, text="Generation: 0")
         s2_label.pack()
-        canvas = tk.Canvas(root, width=700, height=700, bg='white')
+
+        canvas = tk.Canvas(root, width=700, height=620, bg='white')
         canvas.pack()
+
         cell_size = 5
-        padding = 10
+
+        padding_i = 100
+        padding_j = 60
 
         global prev_grid
         global new_grid
@@ -61,10 +65,10 @@ def create_gui():
                     human = Human(s, 0)
                     human.infected = False
                     prev_grid[i][j] = human
-                    canvas.create_rectangle(i * cell_size + padding, j * cell_size + padding, (i + 1) * cell_size + padding, (j + 1) * cell_size + padding, fill='blue')
+                    canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='blue')
                 else:
                     prev_grid[i][j] = None
-                    canvas.create_rectangle(i * cell_size + padding, j * cell_size + padding, (i + 1) * cell_size + padding, (j + 1) * cell_size + padding, fill='white')
+                    canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='white')
 
         human = None
         while human is None:
@@ -72,11 +76,11 @@ def create_gui():
             j = random.randint(0, max_index - 1)
             human = prev_grid[i][j]
 
+        human_exposed += 1
         human.infected = True
         human.exposed += 1
-        human_exposed += 1
         prev_grid[i][j] = copy.deepcopy(human)
-        canvas.create_rectangle(i * cell_size + padding, j * cell_size + padding, (i + 1) * cell_size + padding, (j + 1) * cell_size + padding, fill='red')
+        canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='red')
 
         def update_grid():
 
@@ -85,6 +89,9 @@ def create_gui():
             global max_index
             global human_exposed
             global gen
+
+            to_finish = True
+
 
             percentage = round( (human_exposed / humans), 5)
             s1_label.configure(text="Human percent that exposed: " + str(percentage))
@@ -142,10 +149,15 @@ def create_gui():
                                 new_grid[i][j].infected = False
 
                             if new_grid[i][j].infected:
+
+                                if new_grid[i][j].exposed == 0:
+                                    human_exposed += 1
+
                                 new_grid[i][j].exposed += 1
-                                human_exposed += 1
-                                canvas.create_rectangle(i * cell_size + padding, j * cell_size + padding,
-                                                        (i + 1) * cell_size + padding, (j + 1) * cell_size + padding, fill='red')
+
+                                to_finish = False
+                                canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j,
+                                                        (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='red')
 
                         # human is red
                         elif human.infected:
@@ -153,8 +165,9 @@ def create_gui():
                             new_grid[i][j].infected = False
                             new_grid[i][j].l = generation
 
-                            canvas.create_rectangle(i * cell_size + padding, j * cell_size + padding,
-                                                    (i + 1) * cell_size + padding, (j + 1) * cell_size + padding, fill='blue')
+                            to_finish = False
+                            canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j,
+                                                    (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='blue')
 
                         # human is blue and l > 0
                         else:
@@ -168,12 +181,13 @@ def create_gui():
             prev_grid = copy.deepcopy(new_grid)
             # need to do deep copy from the new bords to the grid 0 and 1
 
+            if to_finish:
+                return
 
-
-            root.after(1000, update_grid) # update the canvas
+            root.after(300, update_grid) # update the canvas
             canvas.update()
 
-        root.after(1000, update_grid)
+        root.after(300, update_grid)
         root.mainloop()
 
 
@@ -192,28 +206,33 @@ def create_gui():
 
     root = tk.Tk()
     root.geometry("510x510")
-    root.title("Simulation")
-    p_label = tk.Label(root, text="Enter probability p:")
+    root.title("Spreading Rumours")
+
+    p_label = tk.Label(root, text="Enter probability P:")
     p_label.pack()
     p_entry = tk.Entry(root)
     p_entry.pack()
-    s1_label = tk.Label(root, text="Enter probability s1:")
+
+    p0_label = tk.Label(root, text="Please insert probabilities into the S's so that the sum of the S's will be 1")
+    p0_label.pack()
+
+    s1_label = tk.Label(root, text="Enter probability S1:")
     s1_label.pack()
     s1_entry = tk.Entry(root)
     s1_entry.pack()
-    s2_label = tk.Label(root, text="Enter probability s2:")
+    s2_label = tk.Label(root, text="Enter probability S2:")
     s2_label.pack()
     s2_entry = tk.Entry(root)
     s2_entry.pack()
-    s3_label = tk.Label(root, text="Enter probability s3:")
+    s3_label = tk.Label(root, text="Enter probability S3:")
     s3_label.pack()
     s3_entry = tk.Entry(root)
     s3_entry.pack()
-    s4_label = tk.Label(root, text="Enter probability s4:")
+    s4_label = tk.Label(root, text="Enter probability S4:")
     s4_label.pack()
     s4_entry = tk.Entry(root)
     s4_entry.pack()
-    l_label = tk.Label(root, text="Enter time l:")
+    l_label = tk.Label(root, text="Enter generation l:")
     l_label.pack()
     l_entry = tk.Entry(root)
     l_entry.pack()
