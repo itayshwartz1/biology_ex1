@@ -254,6 +254,7 @@ def draw_data(p, s1, s2, s3, s4, l, percentage_list):
 
     # plot the data
     ax.plot(percentage_list)
+    ax.set(xlim=(0, 130), ylim=(0, 1))
 
     # add labels and title
     ax.set_xlabel('Generation')
