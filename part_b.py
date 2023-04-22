@@ -3,7 +3,7 @@ Itay Shwartz 318528171
 Noa Eitan 316222777
 
 Running instructions:
-1. Run the main.py file
+1. Run the main2.py file
 
 2. In the popping screen enter:
     p - probability for the density of the population.
@@ -223,7 +223,6 @@ def create_gui():
 
 def main():
     create_gui()
-
 
 if __name__ == "__main__":
     main()

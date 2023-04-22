@@ -3,7 +3,7 @@ Itay Shwartz 318528171
 Noa Eitan 316222777
 
 Running instructions:
-1. Run the main.py file
+1. Run the main2.py file
 
 2. In the popping screen enter:
     p - probability for the density of the population.
@@ -37,24 +37,19 @@ class Human:
         self.l = l
         self.infected = False
 
-def create_gui():
-    def create_grid(p, s1, s2, s3, s4, l):
+def create_gui(p, s1, s2, s3, s4, l):
+    def create_grid():
+
         generation = l
         root = tk.Tk()
-        root.geometry("1000x1000")
-        root.title("Spreading Rumours")
-        s1_label = tk.Label(root, text="Human percent that exposed: 0")
-        s1_label.pack()
-        s2_label = tk.Label(root, text="Generation: 0")
-        s2_label.pack()
 
-        canvas = tk.Canvas(root, width=700, height=620, bg='white')
-        canvas.pack()
+
 
         cell_size = 5
 
         padding_i = 100
         padding_j = 60
+
 
         global prev_grid
         global new_grid
@@ -62,6 +57,8 @@ def create_gui():
         global max_index
         global humans
         global gen
+        global sum_gen
+        sum_gen = []
 
         humans = 0
         gen = 0
@@ -89,10 +86,8 @@ def create_gui():
                     human = Human(s, 0)
                     human.infected = False
                     prev_grid[i][j] = human
-                    canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='blue')
                 else:
                     prev_grid[i][j] = None
-                    canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='white')
 
         human = None
         while human is None:
@@ -104,7 +99,6 @@ def create_gui():
         human.infected = True
         human.exposed += 1
         prev_grid[i][j] = copy.deepcopy(human)
-        canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='red')
 
         def update_grid():
 
@@ -113,14 +107,22 @@ def create_gui():
             global max_index
             global human_exposed
             global gen
-
+            global sum_gen
             to_finish = True
-            
+
+
+
 
             percentage = round( (human_exposed / humans), 5)
-            s1_label.configure(text="Human percent that exposed: " + str(percentage))
+            sum_gen.append(percentage)
+
+            if gen >= 129:
+                print("P is: " + str(p) + " and L is: " + str(generation) + " percentage is: " + str(percentage))
+                root.destroy()
+                return
+
+
             gen += 1
-            s2_label.configure(text="Generation: " + str(gen))
 
             for i in range(0, max_index):
                 for j in range(0, max_index):
@@ -180,8 +182,6 @@ def create_gui():
                                 new_grid[i][j].exposed += 1
 
                                 to_finish = False
-                                canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j,
-                                                        (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='red')
 
                         # human is red
                         elif human.infected:
@@ -190,8 +190,6 @@ def create_gui():
                             new_grid[i][j].l = generation
 
                             to_finish = False
-                            canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j,
-                                                    (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='blue')
 
                         # human is blue and l > 0
                         else:
@@ -206,67 +204,66 @@ def create_gui():
             # need to do deep copy from the new bords to the grid 0 and 1
 
             if to_finish:
+                root.destroy()
+                print("P is: " + str(p) + " and L is: " + str(generation) + " percentage is: " + str(percentage))
                 return
 
-            root.after(300, update_grid) # update the canvas
-            canvas.update()
+            root.after(0, update_grid) # update the canvas
 
-        root.after(300, update_grid)
+
+        root.after(0, update_grid)
         root.mainloop()
 
 
-    def next_screen():
-        p = float(p_entry.get())
-        s1 = float(s1_entry.get())
-        s2 = float(s2_entry.get())
-        s3 = float(s3_entry.get())
-        s4 = 1 - s1 - s2 - s3
-        l = float(l_entry.get())
 
+    create_grid()
 
+import numpy as np
 
-        root.destroy()
-        create_grid(p, s1, s2, s3, s4, l)
-
-    root = tk.Tk()
-    root.geometry("510x510")
-    root.title("Spreading Rumours")
-
-    p_label = tk.Label(root, text="Enter probability P:")
-    p_label.pack()
-    p_entry = tk.Entry(root)
-    p_entry.pack()
-
-    p0_label = tk.Label(root, text="Please insert probabilities into the S's so that the sum of the S's will be 1")
-    p0_label.pack()
-
-    s1_label = tk.Label(root, text="Enter probability S1:")
-    s1_label.pack()
-    s1_entry = tk.Entry(root)
-    s1_entry.pack()
-    s2_label = tk.Label(root, text="Enter probability S2:")
-    s2_label.pack()
-    s2_entry = tk.Entry(root)
-    s2_entry.pack()
-    s3_label = tk.Label(root, text="Enter probability S3:")
-    s3_label.pack()
-    s3_entry = tk.Entry(root)
-    s3_entry.pack()
-    s4_label = tk.Label(root, text="Enter probability S4:")
-    s4_label.pack()
-    s4_entry = tk.Entry(root)
-    s4_entry.pack()
-    l_label = tk.Label(root, text="Enter generation l:")
-    l_label.pack()
-    l_entry = tk.Entry(root)
-    l_entry.pack()
-    button = tk.Button(root, text="Next", command=next_screen)
-    button.pack()
-    canvas = tk.Canvas(root, width=500, height=500, bg='white')
-    root.mainloop()
 
 def main():
-    create_gui()
+    global sum_gen
+    s1 = 0.5
+    s2 = 0.5
+    s3 = 0
+    s4 = 0
+
+
+    for s in [[1, 0, 0, 0], [0.25, 0.25, 0.25, 0.25], [0.5, 0.5, 0, 0]]:
+        for l in [0, 2, 4]:
+            for p in [0.3, 0.6, 0.9]:
+
+                data_list = np.array([0.0] * 130)
+                for n in range(10):
+                    create_gui(p, s[0], s[1], s[2], s[3], l)
+                    while len(sum_gen) < 130:
+                        sum_gen.append(sum_gen[-1])
+                    data_list += np.array(sum_gen)
+                data_list /= 10
+                draw_data(p, s[0], s[1], s[2], s[3], l, data_list)
+
+
+global number
+number = 0
+import matplotlib.pyplot as plt
+def draw_data(p, s1, s2, s3, s4, l, percentage_list):
+    global number
+
+    # create a figure and axis object
+    fig, ax = plt.subplots()
+
+    # plot the data
+    ax.plot(percentage_list)
+    ax.set(xlim=(0, 130), ylim=(0, 1))
+
+    # add labels and title
+    ax.set_xlabel('Generation')
+    ax.set_ylabel('Percentage of humans that hear rumors')
+    ax.set_title("P = " + str(p) + " s1 = " + str(s1) + " s2 = " + str(s2) + " s3 = " + str(s3) + " s4 = " + str(s4) + " L = " + str(l))
+
+    # show the plot
+    plt.savefig(str(number))
+    number += 1
 
 
 if __name__ == "__main__":
