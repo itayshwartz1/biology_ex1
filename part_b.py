@@ -215,10 +215,6 @@ def create_gui():
         root.mainloop()
 
 
-
-
-
-
     create_grid(0.8, 0.6, 0.2, 0.2, 0, 3)
 
 def main():
