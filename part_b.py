@@ -94,17 +94,13 @@ def create_gui():
                     prev_grid[i][j] = None
                     canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='white')
 
-        human = None
-        while human is None:
-            i = 50
-            j = 50
-            human = prev_grid[i][j]
-
-        human_exposed += 1
+        human = Human(1, 0)
         human.infected = True
+        prev_grid[50][50] = copy.deepcopy(human)
+        canvas.create_rectangle(50 * cell_size + padding_i, 50 * cell_size + padding_j, (50 + 1) * cell_size + padding_i,
+                                (50 + 1) * cell_size + padding_j, fill='red')
+
         human.exposed += 1
-        prev_grid[i][j] = copy.deepcopy(human)
-        canvas.create_rectangle(i * cell_size + padding_i, j * cell_size + padding_j, (i + 1) * cell_size + padding_i, (j + 1) * cell_size + padding_j, fill='red')
 
         def update_grid():
 
